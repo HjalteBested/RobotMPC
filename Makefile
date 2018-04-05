@@ -23,7 +23,7 @@ DEPS := $(OBJS:.o=.d)
 
 $(TARGET_EXEC): $(OBJS)
 	$(CC) $(OBJS) -o $@ $(LDFLAGS) $(LIBS)
-
+	$(MKDIR_P) ./simData
 # assembly
 $(BUILD_DIR)/%.s.o: %.s
 	$(MKDIR_P) $(dir $@)
@@ -39,10 +39,19 @@ $(BUILD_DIR)/%.cpp.o: %.cpp
 	$(MKDIR_P) $(dir $@)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
-.PHONY: clean
-clean:
-	$(RM) -r $(BUILD_DIR) $(TARGET_EXEC) ./Documentation	
 
+
+.PHONY: clean doc c mrc
+
+c :
+	make -C ./src_c_connector
+
+mrc :
+	make -C ./src_c_connector mrc
+
+clean:
+	$(RM) -r $(BUILD_DIR) $(TARGET_EXEC) ./Documentation ./simData
+	make -C ./src_c_connector clean
 doc:
 	doxygen Doxyfile
 

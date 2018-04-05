@@ -1,9 +1,11 @@
 #include <iostream>
 #include <fstream>
 #include <Eigen/Dense>
+#include <boost/filesystem.hpp>
 #include "RobotMPC.h"
 using namespace std;
 using namespace Eigen;
+using namespace boost;
 
 int main(){  
   RobotPathFollowMPC pf = RobotPathFollowMPC();
@@ -96,20 +98,20 @@ int main(){
     pf.runSimulation(0.2,0.2,-0.1,10000);
     // cout << "Here is the simdata:\n\ttime\t      x\t\t  y\t   theta\t  v\t\t  omega\t     vl\t\t vr\t      s\t\t  d\t th_err\n" << mpc.simData << endl;
     cout << "Simulation Complete!" << endl;
-    
-    ofstream file("simData.txt");  
+
+    ofstream file("simData/simData.txt");  
     if (file.is_open()){
       file << pf.simData << '\n';
       file.close();
     }
 
-    ofstream file2("simWaypoints.txt");  
+    ofstream file2("simData/simWaypoints.txt");  
     if (file2.is_open()){
       file2 << pf.lineDefs << '\n';
       file2.close();
     }
 
-    ofstream file3("simConstraints.txt");  
+    ofstream file3("simData/simConstraints.txt");  
     if (file3.is_open()){
       file3 << "T\tv_des\ta_des\tw\ta\tN\tQth\tQdu\tQu\tks\tvw_min\tvw_max\tomega_min\tomega_max\tv_min\tv_max\tacc_min\tacc_max\ttrack\t" << endl;
       file3 << pf.T << '\t' << pf.v_des << '\t' << pf.a_des << '\t' << pf.w << '\t' << pf.a << '\t';
