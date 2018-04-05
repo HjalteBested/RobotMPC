@@ -1,7 +1,7 @@
 # When clock skew appears uncomment this line
 # $(shell find . -exec touch {} \;)
 
-TARGET_EXEC := robotMPC
+TARGET_EXEC := robotMPC.out
 
 BUILD_DIR := ./build
 SRC_DIRS  := ./src
