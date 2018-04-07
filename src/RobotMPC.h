@@ -13,6 +13,7 @@
 
 #include <iostream>
 #include <Eigen/Dense>
+
 using namespace std;
 using namespace Eigen;
 
@@ -30,6 +31,7 @@ typedef Matrix<float,Dynamic,7>  MatrixX7f;
 typedef Matrix<float,6,1>  Vector6f;
 typedef Matrix<float,1,1>  Vector1f;
 
+/*
 /// Wheeled Mobile Robot Class
 class WMRobot 
 {	public:
@@ -39,6 +41,7 @@ class WMRobot
 		Vector3f pose; //!< The robot's posture in world coordinates, i.e. \f$ \xi^w = (x,y,\theta)^T \f$, in this internal pose theta is unwrapped and continous. 
 		float w;
 };
+*/
 
 /// LTI system Class
 class LTIsys
@@ -49,7 +52,7 @@ class LTIsys
 		void initBuC(MatrixXf A, MatrixXf Bu, MatrixXf C); //!< Initialize the system \f$ \dot{x} = Ax + B_u u, z = Cx \f$
 		void initBuBrC(MatrixXf A, MatrixXf Bu, MatrixXf Br, MatrixXf C); //!< Initialize the system \f$ \dot{x} = Ax + B_u u + B_r r, z = Cx \f$
 		void initBuBdC(MatrixXf A, MatrixXf Bu, MatrixXf Bd, MatrixXf C); //!< Initialize the system \f$ \dot{x} = Ax + B_u u + B_d d, z = Cx \f$
-		void initBuBrBdC(MatrixXf argA, MatrixXf argBu, MatrixXf argBr, MatrixXf argBd, MatrixXf argC); //!< Initialize the system \f$ \dot{x} = Ax + B_u u + B_r r + B_d d, z = Cx \f$
+		void initBuBrBdC(MatrixXf A, MatrixXf Bu, MatrixXf Br, MatrixXf Bd, MatrixXf C); //!< Initialize the system \f$ \dot{x} = Ax + B_u u + B_r r + B_d d, z = Cx \f$
 
 		// LTI system matrices
 		MatrixXf A;		//!< The system matrix

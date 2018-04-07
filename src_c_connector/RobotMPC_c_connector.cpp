@@ -172,3 +172,4 @@ void RPFMPC_printWaypoints(){
 // gcc main.c -L. -lRobotMPC_c_connector -o c_robotMPC
 // g++ -fpic -shared RobotMPC.cpp -o libRobotMPC.so -I/usr/local/Cellar/eigen/3.3.4/include/eigen3
 // g++ -fpic -shared RobotMPC_c_connector.cpp -L. -lRobotMPC -o libRobotMPC_c_connector.so -I/usr/local/Cellar/eigen/3.3.4/include/eigen3
+

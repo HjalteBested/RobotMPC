@@ -8,7 +8,7 @@ SRC_DIRS  := ./src
 
 CC = g++
 #CFLAGS = -c -Wall -O1 $(shell pkg-config --cflags opencv gsl eigen3)
-CFLAGS = -c -Wall -O1 $(shell pkg-config --cflags eigen3)
+CFLAGS = -c -Wall -O1 -Wextra -std=c++0x $(shell pkg-config --cflags eigen3)
 
 LDFLAGS = -L /usr/local/lib 
 #LIBS = -lpthread $(shell pkg-config --libs opencv gsl eigen3)
