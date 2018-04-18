@@ -26,7 +26,6 @@ int main(){
   pf.currentLine=0;
 
   // Initialize Constraints
-  
   float vw_max =  0.6;
   float vw_min = -vw_max;
   float omega_max = 2*PI/12;
@@ -43,11 +42,9 @@ int main(){
   float Qth = 0.02;
   float Qdu = 0.0005;
   float Qu =  0.0008;
-
-
   pf.initMPC(N);
   pf.design(Qth, Qdu, Qu);
-  pf.ks = 1*v_des/omega_max;
+  pf.ks = v_des/omega_max;
   pf.ka = 0;
   pf.kv = 0;
   // Print That Shit !

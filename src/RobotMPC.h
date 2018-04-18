@@ -255,7 +255,6 @@ class RobotPathFollowMPC
   		MatrixXf simData; //!< Simulation Data in Format: \f$(t,x,y,\theta,v,\omega,v_l,v_r,s,d,\tilde{\theta},L_i,k_{step})\f$ 
 
   		float ka; 
-  		float kv;
   		float ks; //!< The reference will be forced to change to newline if $\f$ s_k > -k_s |\psi_j| \f$
 
   		float th_old;

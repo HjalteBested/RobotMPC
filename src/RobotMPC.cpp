@@ -15,34 +15,34 @@ RobotPathFollowMPC::RobotPathFollowMPC(){
 	initRobotDone = false;
 	
 	// Default Values (DTU's SMR)
-	// float T = 0.01;
-	// float v_des = 0.4;
 	float w = 0.26;
-	float a = 0.20;
+	float a = 0.10;
 	initRobot(w,a);
 	
-	sysType = 1;
-	clkDiv = 4;
-	useNLScaling = 1;
-	// More control parameters
-	ks = 0;
-	ka = 0;
-	kv = 0;
-
-	v_des = 0.3;
-	a_des = 0.2;
-
 	// Default Constraints
 	float vw_max =  1;
-	float vw_min = -1;
+	float vw_min = -vw_max;
 	float omega_max = 2*PI/12;
 	float omega_min = -omega_max;
 	float v_max =  1;
 	float v_min = -1;
-	float acc_max =  0.5;
-	float acc_min = -0.5;
+	float acc_max =  0.3;
+	float acc_min = -0.1;
 	setConstraints(vw_min,vw_max,omega_min,omega_max,v_min,v_max,acc_min,acc_max);
 
+	// More control parameters
+	v_des = 0.3;
+	a_des = 0.2;
+	ks = v_des/omega_max;
+    ka = 0;
+
+    T = 0.04;
+	sysType = 1;
+	clkDiv = 1;
+	useNLScaling = 1;
+
+	// Init
+    init(T*clkDiv, v_des);
 	cout << "Initialization Done!" << endl;
 }
 
@@ -252,19 +252,19 @@ VectorXf RobotPathFollowMPC::getPhiVec(){
 
 // Precompute LineDef : (Pi(0),Pi(1), ||Pj-Pi||, p_ij(0), p_ij(1), varPhi_ij)
 void RobotPathFollowMPC::setWaypoints(MatrixX2f waypoints){
+	readyToCompute = false;
 	int rows = waypoints.rows();
-	cout << "done" << endl;
 	lineDefs.resize(rows,Eigen::NoChange);
 	lineDefs.leftCols(2) = waypoints;
 	makeLineDefs();
 }
 
 void RobotPathFollowMPC::clearWaypoints(){
+	readyToCompute = false;
 	lineDefs.resize(0,Eigen::NoChange);
 	lineDefs.setZero();
 	numLines = 0;
 	currentLine = 0;
-	readyToCompute = false;
 	allDone = false;
 }
 
@@ -341,7 +341,7 @@ void RobotPathFollowMPC::makeLineDefs(){
 		lineDefs(M-1,6) = 0;
 
 		numLines = lineDefs.rows();
-		setRk(0,getPhi(0));
+		setRk(0,getPhiFixed(0));
 		readyToCompute = true;
 	}
 }
@@ -439,12 +439,7 @@ VectorXf RobotPathFollowMPC::scaleVelocityVec(VectorXf Uk, float v_des){
 	float vkm1 = Vk(0);
 	float dVmax = min(a_des,acc_max)*T;
 	float dVmin = max(-a_des,acc_min)*T;
-	//float dVmax = acc_max*T;
-	//float dVmin = acc_min*T;
 	float dV;
-
-	//float abs_s = abs(yk(0));
-	//if(abs_s > v_des && kv > 0) v_des = abs_s*kv;
 
 	for(int n=0; n<N; n++){		
 			// Satisfy the velocity constraints by saturation.
