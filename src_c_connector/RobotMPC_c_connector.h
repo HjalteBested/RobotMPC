@@ -28,6 +28,7 @@ void RPFMPC_clearWaypoints();
 void RPFMPC_addWaypoint(float x, float y);
 void RPFMPC_insertWaypoint(float i, float x, float y);
 void RPFMPC_insertWaypointRel(float i, float x, float y);
+void RPFMPC_makeLineDefs();
 
 // Compute the control
 void RPFMPC_compute(float x, float y, float theta);

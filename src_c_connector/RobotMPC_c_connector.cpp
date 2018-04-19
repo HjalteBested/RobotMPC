@@ -100,6 +100,10 @@ void RPFMPC_insertWaypointRel(float i, float x, float y){
 	rpfmpc->insertWaypointRel(i,x,y);
 }
 
+void RPFMPC_makeLineDefs(){
+	rpfmpc->makeLineDefs();
+}
+
 void RPFMPC_compute(float x, float y, float theta){
 	rpfmpc->compute(x,y,theta);
 }

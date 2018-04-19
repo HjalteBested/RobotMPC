@@ -39,9 +39,13 @@ RobotPathFollowMPC::RobotPathFollowMPC(){
 	clkDiv = 1;
 	useNLScaling = 1;
 
+	th_old = 0;
+	th_nwrap = 0;
+	clkTick = 0;
+
+
 	// Init
     init(T*clkDiv, v_des);
-	cout << "Initialization Done!" << endl;
 }
 
 /// Destroy object - currently a no operation
@@ -83,10 +87,9 @@ void RobotPathFollowMPC::clear(){
 	ur << 0,0;
 
   	kStep = -1;
-  	th_old = 0;
-	th_nwrap = 0;
+
 	timeSinceRefChange = 0;
-	clkTick = 0;
+	cout << "RobotPathFollowMPC: Initialization Done!" << endl;
 }
 
 /// Initialize Robot
@@ -296,7 +299,6 @@ void RobotPathFollowMPC::addWaypoint(float x, float y){
 	lineDefs.conservativeResize(row+1,Eigen::NoChange);
 	lineDefs(row,0) = x;
 	lineDefs(row,1) = y;
-	makeLineDefs();
 }
 
 void RobotPathFollowMPC::insertWaypoint(float i, float x, float y){
@@ -310,8 +312,6 @@ void RobotPathFollowMPC::insertWaypoint(float i, float x, float y){
 	// Insert new point
 	lineDefs(i,0) = x;
 	lineDefs(i,1) = y;
-	// Recompute line definitions
-	makeLineDefs();
 }
 
 void RobotPathFollowMPC::insertWaypointRel(float i, float x, float y){
