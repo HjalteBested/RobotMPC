@@ -63,7 +63,7 @@ void RPFMPC_setAccConstraints(float acc_min, float acc_max){
 
 void RPFMPC_initMPC(int N){
 	rpfmpc->initMPC(N);
-};
+}
 
 void RPFMPC_design(float Qth, float Qdu, float Qu){
 	rpfmpc->design(Qth,Qdu,Qu);
@@ -80,6 +80,9 @@ void RPFMPC_designAll(float Qth, float Qdu, float Qu, float a, int clkDiv, int N
 	rpfmpc->design(Qth,Qdu,Qu);
 }
 
+void RPFMPC_clear(){
+	rpfmpc->clear();
+}
 
 void RPFMPC_clearWaypoints(){
 	rpfmpc->clearWaypoints();
@@ -133,11 +136,11 @@ float RPFMPC_get_a(){
 }
 float RPFMPC_get_d(){
 	return rpfmpc->get_d();
-};
+}
 
 float RPFMPC_get_th_err(){
 	return rpfmpc->get_th_err();
-};
+}
 
 void RPFMPC_setVelAcc(float v, float a){
 	rpfmpc->setV(v);
@@ -171,7 +174,7 @@ float RPFMPC_get_clkDiv(){
 
 int RPFMPC_isLastLine(int i){
 	return rpfmpc->isLastLine(i);
-};
+}
 
 int RPFMPC_allDone(){
 	return rpfmpc->allDone;
@@ -189,7 +192,7 @@ void RPFMPC_runSimulation(float x, float y, float theta, int nstp){
 	rpfmpc->runSimulation(x, y, theta, nstp);
 	cout << "Simulation Complete!" << endl;
 	cout << "Here is the simdata:\n" << rpfmpc->simData << endl;
-};
+}
 
 // Print Function Wrappers
 void RPFMPC_printRobot(){

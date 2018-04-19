@@ -22,6 +22,7 @@ void RPFMPC_designAll(float Qth, float Qdu, float Qu, float a, int clkDiv, int N
 
 void RPFMPC_setVelAcc(float v, float a);
 
+void RPFMPC_clear();
 // Waypoints
 void RPFMPC_clearWaypoints();
 void RPFMPC_addWaypoint(float x, float y);
