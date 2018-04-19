@@ -54,18 +54,26 @@ RobotPathFollowMPC::~RobotPathFollowMPC(){
 ///	v_des: 	Desired Velocity [m/s] - can be changes at runtime
 ///	w: 		Wheel-to-wheel distance [m]
 ///	a: 		Reference point offset from wheel-axle along $\f x^r \f$ [m]
-void RobotPathFollowMPC::init(float arg_T, float arg_v_des){
+void RobotPathFollowMPC::init(float arg_T, float v){
+	// LTI System
+	if(sys.nx() == 0 || v != v_des || arg_T != T){
+		T = arg_T;
+		v_des = v;
+		initSys(sysType, T, a, v_des, 0, 0);
+	}
+
+	ks = v_des/q(4);
+    ka = 0;
+
+	clear();
+}
+
+
+void RobotPathFollowMPC::clear(){
 	// Initflags
 	allDone = false;
 	readyToCompute = false;
 	firstRun = true;
-
-	// LTI System
-	if(sys.nx() == 0 || arg_v_des != v_des || arg_T != T){
-		T = arg_T;
-		v_des = arg_v_des;
-		initSys(sysType, T, a, v_des, 0, 0);
-	}
 
 	// Init State Variables
 	currentLine = 0;
@@ -79,9 +87,6 @@ void RobotPathFollowMPC::init(float arg_T, float arg_v_des){
 	th_nwrap = 0;
 	timeSinceRefChange = 0;
 	clkTick = 0;
-
-	ks = v_des/q(4);
-    ka = 0;
 }
 
 /// Initialize Robot
@@ -160,6 +165,16 @@ void RobotPathFollowMPC::initSys(int type, float T, float a, float v0, float ome
 	}
 }
 
+
+
+void RobotPathFollowMPC::setV(float v){
+	if(v != v_des){
+		v_des = v;
+		initSys(sysType, T, a, v_des, 0, 0);
+		design(qth,qdu,qu);
+	}
+}
+
 void RobotPathFollowMPC::initMPC(int N){
 		mpc.initMPC(N);
 		// Stacked Vectors for the prediction horizon
@@ -170,14 +185,21 @@ void RobotPathFollowMPC::initMPC(int N){
 		Thetak 	= VectorXf::Zero(mpc.N+1);
 }
 
+
+
 /// Design MPC
 void RobotPathFollowMPC::design(float argQth, float argQdu, float argQu){
-	Vector2f Qz; 	Qz 	<< 1, argQth;
-	Vector1f Qdu; 	Qdu << argQdu;
-	Vector1f Qu; 	Qu 	<< argQu;
+	qth = argQth;
+	qdu = argQdu;
+	qu = argQu;
+	Vector2f Qz; 	Qz 	<< 1, qth;
+	Vector1f Qdu; 	Qdu << qdu;
+	Vector1f Qu; 	Qu 	<< qu;
 	mpc.condenseStateSpace();
 	mpc.designMPC(Qz,Qdu,Qu);
 }
+
+
 
 // Functions for accessing the needed reference info
 Vector2f RobotPathFollowMPC::getPi(int i){
@@ -776,6 +798,7 @@ LMPC::LMPC(){
 	initMPCDone = false;
 	condenseStateSpaceDone = false;
 	designMPCDone = false;
+	N = 0;
 }
 
 LMPC::LMPC(LTIsys *argSys){
@@ -783,6 +806,7 @@ LMPC::LMPC(LTIsys *argSys){
 	initMPCDone = false;
 	condenseStateSpaceDone = false;
 	designMPCDone = false;
+	N = 0;
 }
 
 /// Destroy object - currently a no operation

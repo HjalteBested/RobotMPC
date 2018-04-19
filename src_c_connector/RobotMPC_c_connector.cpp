@@ -8,6 +8,9 @@ extern "C" {
 
 // Inside this "extern C" block, I can define C functions that are able to call C++ code
 static RobotPathFollowMPC *rpfmpc = NULL;
+
+
+
 void lazyRPFMPC() {
     if (rpfmpc == NULL) {
         rpfmpc = new RobotPathFollowMPC();
@@ -66,6 +69,18 @@ void RPFMPC_design(float Qth, float Qdu, float Qu){
 	rpfmpc->design(Qth,Qdu,Qu);
 }
 
+void RPFMPC_designAll(float Qth, float Qdu, float Qu, float a, int clkDiv, int N, float v_des){
+	rpfmpc->clkDiv = clkDiv;
+	rpfmpc->init(rpfmpc->T*clkDiv,v_des);
+	if(rpfmpc->a != a){
+		rpfmpc->a = a;
+		rpfmpc->initSys(rpfmpc->sysType, rpfmpc->T, rpfmpc->a, rpfmpc->v_des, 0, 0);
+	}
+	if(rpfmpc->mpc.N != N) rpfmpc->initMPC(N);
+	rpfmpc->design(Qth,Qdu,Qu);
+}
+
+
 void RPFMPC_clearWaypoints(){
 	rpfmpc->clearWaypoints();
 }
@@ -113,6 +128,9 @@ float RPFMPC_getKa(){
 float RPFMPC_get_s(){
 	return rpfmpc->get_s();
 }
+float RPFMPC_get_a(){
+	return rpfmpc->a;
+}
 float RPFMPC_get_d(){
 	return rpfmpc->get_d();
 };
@@ -120,6 +138,11 @@ float RPFMPC_get_d(){
 float RPFMPC_get_th_err(){
 	return rpfmpc->get_th_err();
 };
+
+void RPFMPC_setVelAcc(float v, float a){
+	rpfmpc->setV(v);
+	rpfmpc->a_des = a;
+}
 
 float RPFMPC_get_v_des(){
 	return rpfmpc->v_des;
@@ -135,6 +158,15 @@ float RPFMPC_get_a_des(){
 
 int RPFMPC_get_N(){
 	return rpfmpc->mpc.N;
+}
+
+// Getter / Setter Functions
+void RPFMPC_set_clkDiv(float clkDiv){
+	rpfmpc->clkDiv = clkDiv;
+}
+
+float RPFMPC_get_clkDiv(){
+	return rpfmpc->clkDiv;
 }
 
 int RPFMPC_isLastLine(int i){

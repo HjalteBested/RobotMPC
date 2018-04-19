@@ -144,6 +144,7 @@ class RobotPathFollowMPC
 		void initRobot(float w, float a);
 		bool initRobotDone;
 
+		void clear();
 		void initSys(int type, float T, float a, float v0, float omega0, float th_err0);
 		void initMPC(int N); //!< Initialize Memory needed for MPC with the given system and horizon N
 
@@ -228,6 +229,7 @@ class RobotPathFollowMPC
   		void makeLineDefs(); //!< Line parameters computed from way-points in Format: \f$(P_{i,x},P_{i,x},|P_{ij}|,p_{ij,x},p_{ij,y},\varphi_{ij},\psi)\f$ 
   		bool readyToCompute;
   		bool allDone;
+		void setV(float v);
 
 		// Functions for accessing the needed reference info
 		Vector2f getPi(int i);		//!< Get \f$P_i\f$: Point vector 
@@ -243,6 +245,10 @@ class RobotPathFollowMPC
   		float wrapToPi(float angle); //!< Wrap angle in radians to [−π π[
   		Matrix3f Rot(float angle); 	 //!< Return 3D Rotation Matrix around z-axix
   		Matrix2f Rot2D(float angle); //!< Return 2D Rotation Matrix around z-axix
+
+  		float qth;
+  		float qdu;
+  		float qu;
 
   		int timeSinceRefChange;
 

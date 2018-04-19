@@ -18,6 +18,9 @@ void RPFMPC_setConstraints(float vw_min, float vw_max, float omega_min, float om
 void RPFMPC_setAccConstraints(float acc_min, float acc_max);
 void RPFMPC_initMPC(int N);
 void RPFMPC_design(float Qth, float Qdu, float Qu);
+void RPFMPC_designAll(float Qth, float Qdu, float Qu, float a, int clkDiv, int N, float v_des);
+
+void RPFMPC_setVelAcc(float v, float a);
 
 // Waypoints
 void RPFMPC_clearWaypoints();
@@ -40,6 +43,9 @@ void RPFMPC_printControllerGains();
 void RPFMPC_printWaypoints();
 
 // Getter / Setter Functions
+void RPFMPC_setClkDiv(float clkDiv);
+float RPFMPC_getClkDiv();
+
 void RPFMPC_setKs(float ks);
 float RPFMPC_getKs();
 void RPFMPC_setKa(float ka);
