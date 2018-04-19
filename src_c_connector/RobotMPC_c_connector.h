@@ -7,6 +7,8 @@ extern "C" {
 
 // Construct and Deconstruct
 void RPFMPC_create();
+void RPFMPC_createWithParams(float T, int clkDiv, float w, float a, float v_des, float a_des, int N, float Qth, float Qdu, float Qu);
+
 void RPFMPC_destroy();
 
 // Wrapper Functions
@@ -40,8 +42,6 @@ void RPFMPC_printWaypoints();
 // Getter / Setter Functions
 void RPFMPC_setKs(float ks);
 float RPFMPC_getKs();
-void RPFMPC_setKv(float kv);
-float RPFMPC_getKv();
 void RPFMPC_setKa(float ka);
 float RPFMPC_getKa();
 
@@ -49,6 +49,7 @@ float RPFMPC_get_s();
 float RPFMPC_get_d();
 float RPFMPC_get_th_err();
 float RPFMPC_get_v_des();
+int RPFMPC_get_N();
 
 void RPFMPC_set_a_des(float a_des);
 float RPFMPC_get_a_des();

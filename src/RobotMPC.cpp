@@ -27,14 +27,12 @@ RobotPathFollowMPC::RobotPathFollowMPC(){
 	float v_max =  1;
 	float v_min = -1;
 	float acc_max =  0.3;
-	float acc_min = -0.1;
+	float acc_min = -0.3;
 	setConstraints(vw_min,vw_max,omega_min,omega_max,v_min,v_max,acc_min,acc_max);
 
 	// More control parameters
 	v_des = 0.3;
 	a_des = 0.2;
-	ks = v_des/omega_max;
-    ka = 0;
 
     T = 0.04;
 	sysType = 1;
@@ -81,6 +79,9 @@ void RobotPathFollowMPC::init(float arg_T, float arg_v_des){
 	th_nwrap = 0;
 	timeSinceRefChange = 0;
 	clkTick = 0;
+
+	ks = v_des/q(4);
+    ka = 0;
 }
 
 /// Initialize Robot

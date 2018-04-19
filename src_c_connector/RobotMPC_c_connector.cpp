@@ -20,6 +20,20 @@ void RPFMPC_create(){
     }
 }
 
+void RPFMPC_createWithParams(float T, int clkDiv, float w, float a, float v_des, float a_des, int N, float Qth, float Qdu, float Qu){
+    if (rpfmpc == NULL){
+        rpfmpc = new RobotPathFollowMPC();
+        rpfmpc->clkDiv = clkDiv;
+        rpfmpc->init(T*clkDiv,v_des);
+        rpfmpc->initRobot(w,a);
+        rpfmpc->a_des = a_des;
+	    rpfmpc->initMPC(N);
+        rpfmpc->design(Qth, Qdu, Qu);
+		rpfmpc->ks = v_des/rpfmpc->q(4);
+		rpfmpc->ka = 0;
+    }
+}
+
 void RPFMPC_destroy(){
 	if(rpfmpc != NULL){ 
 		delete rpfmpc;
@@ -88,12 +102,7 @@ void RPFMPC_setKs(float ks){
 float RPFMPC_getKs(){
 	return rpfmpc->ks;
 }
-void RPFMPC_setKv(float kv){
-	rpfmpc->kv = kv;
-}
-float RPFMPC_getKv(){
-	return rpfmpc->kv;
-}
+
 void RPFMPC_setKa(float ka){
 	rpfmpc->ka = ka;
 }
@@ -124,9 +133,14 @@ float RPFMPC_get_a_des(){
 	return rpfmpc->a_des;
 }
 
+int RPFMPC_get_N(){
+	return rpfmpc->mpc.N;
+}
+
 int RPFMPC_isLastLine(int i){
 	return rpfmpc->isLastLine(i);
 };
+
 int RPFMPC_allDone(){
 	return rpfmpc->allDone;
 }

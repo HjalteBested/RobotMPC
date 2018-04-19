@@ -4,26 +4,29 @@
 #define PI 3.141592654
 
 int main() {
-	RPFMPC_create();
-
+	// RPFMPC_create();
 	// Init MPC
 	float T = 0.01;
 	int clkDiv = 4;
 	float v_des = 0.4;
+	float a_des = 0.3;
 	float w = 0.26;
 	float a = 0.2;
-	printf("init = %d, v_des = %f\n",RPFMPC_initMPCDone(),RPFMPC_get_v_des());
-	RPFMPC_init(T, clkDiv, v_des);
-	RPFMPC_initRobot(w, a);
-	RPFMPC_set_a_des(0.2);	
+
+	// RPFMPC_init(T, clkDiv, v_des);
+	// RPFMPC_initRobot(w, a);
+	// RPFMPC_set_a_des(0.2);	
 
 	// Design MPC - Compute controller gains for the horizon
 	int N = 100;
 	float Qth = 0.02;
 	float Qdu = 0.02;
 	float Qu = 0.001;
-	RPFMPC_initMPC(N);
-	RPFMPC_design(Qth, Qdu, Qu);
+	// RPFMPC_initMPC(N);
+	// RPFMPC_design(Qth, Qdu, Qu);
+
+	RPFMPC_createWithParams(T, clkDiv, w, a, v_des, a_des, N, Qth, Qdu, Qu);
+	
 
 	printf("init = %d, v_des = %f\n",RPFMPC_initMPCDone(),RPFMPC_get_v_des());
 
@@ -53,6 +56,7 @@ int main() {
 	printf("vk = %f, omega = %f\n",ur[0],ur[1]);
 	printf("vl = %f, vr = %f\n",uw[0],uw[1]);
 
+	
     RPFMPC_destroy();
     return 0;
 }

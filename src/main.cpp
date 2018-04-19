@@ -46,7 +46,6 @@ int main(){
   pf.design(Qth, Qdu, Qu);
   pf.ks = v_des/omega_max;
   pf.ka = 0;
-  pf.kv = 0;
   // Print That Shit !
   pf.printRobot();
   pf.sys.printSys();
