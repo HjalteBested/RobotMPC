@@ -1,14 +1,14 @@
 # When clock skew appears uncomment this line
 # $(shell find . -exec touch {} \;)
 
-TARGET_EXEC := robotMPC.out
+TARGET_EXEC := robotMPC.app
 
 BUILD_DIR := ./build
 SRC_DIRS  := ./src
 
 CC = g++
 #CFLAGS = -c -Wall -O1 $(shell pkg-config --cflags opencv gsl eigen3)
-CFLAGS = -c -Wall -O1 -Wextra -std=c++0x $(shell pkg-config --cflags eigen3)
+CFLAGS = -c -Wall -O1 -Wextra -std=c++0x $(shell pkg-config --cflags eigen3) -I./src
 
 LDFLAGS = -L /usr/local/lib 
 #LIBS = -lpthread $(shell pkg-config --libs opencv gsl eigen3)
@@ -24,6 +24,7 @@ DEPS := $(OBJS:.o=.d)
 $(TARGET_EXEC): $(OBJS)
 	$(CC) $(OBJS) -o $@ $(LDFLAGS) $(LIBS)
 	$(MKDIR_P) ./simData
+	
 # assembly
 $(BUILD_DIR)/%.s.o: %.s
 	$(MKDIR_P) $(dir $@)

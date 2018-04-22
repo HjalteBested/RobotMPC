@@ -98,7 +98,7 @@ class LMPC
 		bool condenseStateSpaceDone;
 
 		// Design MPC Controller
-		void designMPC(VectorXf argQz, VectorXf argQdu, VectorXf argQu);
+		void designMPC(const VectorXf& argQz, const VectorXf& argQdu, const VectorXf& argQu);
 		VectorXf Qz;	//!< Penalty on the output error \f$ |\hat{z}-\hat{r}|^2_{Q_z} \f$
 		VectorXf Qdu;	//!< Penalty control rate-of-change \f$ |\Delta \hat{u}|^2_{Q_{\Delta u}} \f$
 		VectorXf Qu;	//!< Penalty control control signal \f$ |\hat{u}-\bar{u}|^2_{Q_{u}} \f$

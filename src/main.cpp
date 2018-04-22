@@ -19,7 +19,7 @@ int main(){
   float v_des = 0.3;
   pf.a_des = 0.1;
   float w = 0.26;
-  float a = 0.15;
+  float a = 0.10;
   
   pf.initRobot(w,a);
   pf.init(T, v_des);
@@ -80,6 +80,7 @@ int main(){
     }
     break;
   }
+  pf.makeLineDefs();
   // Define waypoints 
   // n-by-n square
 

@@ -3,7 +3,7 @@
  * in the Presence of Velocity Constraints.
  *
  * \author Hjalte Bested Møller
- * \date 6. Marts 2018	
+ * \date 22. April 2018	
 */
 
 #include "RobotMPC.h"
@@ -770,7 +770,7 @@ void RobotPathFollowMPC::runSimulation(float x, float y, float theta, int nstp){
 		ur = compute(x,y,theta);
 		// uw = invFw*ur;
 
-		simData.row(iter) << time,x,y,theta,ur(0),ur(1),uw(0),uw(1),yk(0),yk(1),yk(2), currentLine, kStep;
+		simData.row(iter) << time,x,y,theta,ur(0),ur(1),uw(0),uw(1),yk(0),yk(1),yk(2),currentLine,kStep;
 
 		// Forward Euler Approximation
 		pose = kinupdate(pose,uw,T); 
@@ -890,24 +890,24 @@ void LMPC::condenseStateSpace(){
 
 	// Fill the rest of the matrix
 	for(int i=1;i<N;i++){
-	int k1 = i*nz;
-	Gu.block(k1,i*nu,(N-i)*nz,nu) = Gu.block((i-1)*nz,(i-1)*nu,(N-i)*nz,nu);
-	if(sys->nr()>0) Gr.block(k1,i*nr,(N-i)*nz,nr) = Gr.block((i-1)*nz,(i-1)*nr,(N-i)*nz,nr);
-	if(sys->nd()>0) Gd.block(k1,i*nd,(N-i)*nz,nd) = Gd.block((i-1)*nz,(i-1)*nd,(N-i)*nz,nd);
+		int k1 = i*nz;
+		Gu.block(k1,i*nu,(N-i)*nz,nu) = Gu.block((i-1)*nz,(i-1)*nu,(N-i)*nz,nu);
+		if(sys->nr()>0) Gr.block(k1,i*nr,(N-i)*nz,nr) = Gr.block((i-1)*nz,(i-1)*nr,(N-i)*nz,nr);
+		if(sys->nd()>0) Gd.block(k1,i*nd,(N-i)*nz,nd) = Gd.block((i-1)*nz,(i-1)*nd,(N-i)*nz,nd);
 	}
 	condenseStateSpaceDone = true;
 }
 
 /// Design MPC
-void LMPC::designMPC(VectorXf argQz, VectorXf argQdu, VectorXf argQu){
+void LMPC::designMPC(const VectorXf& argQz, const VectorXf& argQdu, const VectorXf& argQu){
 	Qz  = argQz;
 	Qdu = argQdu;
 	Qu 	= argQu;
 
   	// Stacked weights for quadratic program formulation.
-  	Qzcal = Qz.replicate(N,1).asDiagonal();
+  	Qzcal  = Qz.replicate(N,1).asDiagonal();
   	Qducal = Qdu.replicate(N,1).asDiagonal();
-  	Qucal = Qu.replicate(N,1).asDiagonal();
+  	Qucal  = Qu.replicate(N,1).asDiagonal();
 	
 	// Compute the Hessian Matrix and it's inverse
 	H =  Gu.transpose()*Qzcal*Gu +             // Hz

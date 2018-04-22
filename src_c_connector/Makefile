@@ -1,7 +1,7 @@
 # When clock skew appears uncomment this line
 # $(shell find . -exec touch {} \;)
 
-TARGET_EXEC := c_robotMPC.out
+TARGET_EXEC := c_robotMPC.app
 
 CC = gcc
 CFLAGS = -Wall -O1 -Wextra -pedantic
