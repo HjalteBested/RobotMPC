@@ -18,8 +18,6 @@ SRCS := $(shell	find $(SRC_DIRS)	-name	*.cpp	-or	-name	*.c	-or	-name	*.s)
 OBJS := $(SRCS:%=$(BUILD_DIR)/%.o)
 DEPS := $(OBJS:.o=.d)
 
-#MAV_FLAG := -I mavlink/include/mavlink/v2.0
-#CPPFLAGS := $(MAV_FLAG) -MMD -MP
 
 $(TARGET_EXEC): $(OBJS)
 	$(CC) $(OBJS) -o $@ $(LDFLAGS) $(LIBS)
@@ -42,9 +40,9 @@ $(BUILD_DIR)/%.cpp.o: %.cpp
 
 
 
-.PHONY: clean doc c mrc
+.PHONY: clean doc c_connector mrc
 
-c :
+c_connector :
 	make -C ./src_c_connector
 
 mrc :
@@ -53,6 +51,7 @@ mrc :
 clean:
 	$(RM) -r $(BUILD_DIR) $(TARGET_EXEC) ./Documentation ./simData
 	make -C ./src_c_connector clean
+
 doc:
 	doxygen Doxyfile
 
