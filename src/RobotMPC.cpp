@@ -374,7 +374,7 @@ void RobotPathFollowMPC::setRk(float d_ref, float phi_ref){
 	mpc.Rk = rk.replicate(mpc.N,1);
 }
 
-Vector6f RobotPathFollowMPC::convertPose(Vector3f pose, Vector2f Pr, int i){
+Vector6f RobotPathFollowMPC::convertPose(Vector3f const& pose, Vector2f const& Pr, int i){
 	Vector6f z;
 	// Unpack pose vector
 	// float x = pose(0);
@@ -457,7 +457,7 @@ float RobotPathFollowMPC::scaleVelocity(float u, float v_des){
 }
 
 
-VectorXf RobotPathFollowMPC::scaleVelocityVec(VectorXf Uk, float v_des){
+VectorXf RobotPathFollowMPC::scaleVelocityVec(VectorXf const& Uk, float v_des){
 	int N = mpc.N;
 	float vkm1 = Vk(0);
 	float dVmax = min(a_des,acc_max)*T;
@@ -492,7 +492,7 @@ VectorXf RobotPathFollowMPC::scaleVelocityVec(VectorXf Uk, float v_des){
 	return Vk;
 }
 
-int RobotPathFollowMPC::predict(Vector6f yk, VectorXf Uk){
+int RobotPathFollowMPC::predict(Vector6f const& yk, VectorXf const& Uk){
 	int N = mpc.N;
 	int kStepsFound = 0;
 	int kStep = -1;
@@ -635,7 +635,7 @@ Vector2f RobotPathFollowMPC::compute(float x, float y, float th_new){
 	kStep = predict(yk,mpc.Uk);
 	// cout << "Phi:" << getPhiVec().transpose() << endl;
 
-	float vk = Vk(0);
+	float& vk = Vk(0);
 	float vk_min = 0.1;
 
 	// Converge to the final point

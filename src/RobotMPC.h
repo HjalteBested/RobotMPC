@@ -199,9 +199,9 @@ class RobotPathFollowMPC
 		
 		Vector2f compute(float x, float y, float theta);
 		Vector2f computeW(float x, float y, float theta);
-		int predict(Vector6f yk,VectorXf Uk); //!< Predict robot posture over the horizon and update the reference at meaningful time instants
+		int predict(Vector6f const& yk, VectorXf const& Uk); //!< Predict robot posture over the horizon and update the reference at meaningful time instants
 
-		Vector6f convertPose(Vector3f pose, Vector2f Pr, int i); //!< Convert pose to controller coordinates and return \f$y_k\f$
+		Vector6f convertPose(Vector3f const& pose, Vector2f const& Pr, int i); //!< Convert pose to controller coordinates and return \f$y_k\f$
 		
 		bool useNLScaling; //!< If TRUE the controller will use the nonlinear scaling of when the orientation error is big.
 	
@@ -209,7 +209,7 @@ class RobotPathFollowMPC
   		void setConstraints(float vw_min, float vw_max, float omega_min, float omega_max, float v_min, float v_max, float acc_min, float acc_max); //!< Set Velocity Constraints and form P and q
   		void setAccConstraints(float acc_min, float acc_max);
  		float scaleVelocity(float u, float v_des); //!< Scale Velocity to satisfy constraints;
-  		VectorXf scaleVelocityVec(VectorXf Uk, float v_des); //!< Scale Velocity to satisfy constraints;
+  		VectorXf scaleVelocityVec(VectorXf const& Uk, float v_des); //!< Scale Velocity to satisfy constraints;
   		bool useConstrains; //!< If TRUE the controller will satisfy the constraints, if FALSE the controller will ignore the constraints
   		Matrix<float, 8, 2> P; //!< Constraints in compact form: \f$ P u_r \leq q \f$
   		Matrix<float, 8, 1> q; //!< Constraints in compact form: \f$ P u_r \leq q \f$

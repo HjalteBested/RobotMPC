@@ -9,8 +9,6 @@ extern "C" {
 // Inside this "extern C" block, I can define C functions that are able to call C++ code
 static RobotPathFollowMPC *rpfmpc = NULL;
 
-
-
 void lazyRPFMPC() {
     if (rpfmpc == NULL) {
         rpfmpc = new RobotPathFollowMPC();
@@ -214,6 +212,15 @@ void RPFMPC_printControllerGains(){
 void RPFMPC_printWaypoints(){
 	rpfmpc->printWaypoints();
 }
+
+
+void RPFMPC_setCurrentLine(int currentLine){ 
+	rpfmpc->currentLine = currentLine; 
+}
+int  RPFMPC_getCurrentLine(){ 
+	return rpfmpc->currentLine; 
+}
+
 
 
 #ifdef __cplusplus

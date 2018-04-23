@@ -27,6 +27,8 @@ int main() {
 
 	RPFMPC_createWithParams(T, clkDiv, w, a, v_des, a_des, N, Qth, Qdu, Qu);
 	
+	printf("currentLine=%i\n",RPFMPC_getCurrentLine());
+
 
 	printf("init = %d, v_des = %f\n",RPFMPC_initMPCDone(),RPFMPC_get_v_des());
 
@@ -44,6 +46,8 @@ int main() {
 	RPFMPC_addWaypoint(2,    -3);
 	RPFMPC_addWaypoint(0,    -3);
 	RPFMPC_addWaypoint(0,     0);
+	RPFMPC_makeLineDefs();
+
 
 	// Compute the control signal
 	RPFMPC_compute(-0.3,-0.6,0);

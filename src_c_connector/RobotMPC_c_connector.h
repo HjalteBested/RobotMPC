@@ -67,6 +67,11 @@ int RPFMPC_allDone();
 int RPFMPC_designMPCDone();
 int RPFMPC_initMPCDone();
 
+void RPFMPC_setCurrentLine(int currentLine);
+int RPFMPC_getCurrentLine();
+
+
+
 #ifdef __cplusplus
 }
 #endif
