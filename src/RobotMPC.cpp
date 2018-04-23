@@ -22,7 +22,7 @@ RobotPathFollowMPC::RobotPathFollowMPC(){
 	// Default Constraints
 	float vw_max =  1;
 	float vw_min = -vw_max;
-	float omega_max = 2*PI/12;
+	float omega_max = 2*PI/10;
 	float omega_min = -omega_max;
 	float v_max =  1;
 	float v_min = -1;
@@ -574,7 +574,7 @@ float RobotPathFollowMPC::get_th_err(){
 
 // --- MPC Compute --- //
 Vector2f RobotPathFollowMPC::compute(float x, float y, float th_new){
-	if(!readyToCompute || allDone){
+	if(allDone){
 		ur << 0,0;
 		uw << 0,0;
 		return ur;
@@ -608,7 +608,7 @@ Vector2f RobotPathFollowMPC::compute(float x, float y, float th_new){
 	// Clock Divider convinience method. MPC works better with slover clockrate which means longer prediction
 	if(clkDiv > 1){
 		if(clkTick == clkDiv) clkTick=0;
-		if(clkTick++ != 0) return ur;
+		if(clkTick++ != 0 || !readyToCompute) return ur;
 	}
 
 	float s = yk(0);
