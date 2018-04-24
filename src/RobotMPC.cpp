@@ -558,7 +558,7 @@ int RobotPathFollowMPC::predict(Vector6f const& yk, VectorXf const& Uk){
 			if(++kStepsFound == 1) kStep = n;
         	Sk(n+1) = -getLineLength(kStepsFound);
         	psi = getPsi(kStepsFound); 
-        	float phiVal = getPhi(kStepsFound); 
+        	float phiVal = getPhiFixed(kStepsFound); 
     		for(int nn=n; nn<N; nn++) mpc.Rk(2*nn+1) = phiVal;
     		//}
     	}
