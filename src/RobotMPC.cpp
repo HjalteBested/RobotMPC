@@ -46,6 +46,7 @@ RobotPathFollowMPC::RobotPathFollowMPC(){
 
 	// Init
     init(T*clkDiv, v_des);
+    cout << "RobotPathFollowMPC: Initialization Done!" << endl;
 }
 
 /// Destroy object - currently a no operation
@@ -89,7 +90,6 @@ void RobotPathFollowMPC::clear(){
   	kStep = -1;
 
 	timeSinceRefChange = 0;
-	cout << "RobotPathFollowMPC: Initialization Done!" << endl;
 }
 
 /// Initialize Robot
@@ -595,6 +595,8 @@ Vector2f RobotPathFollowMPC::compute(float x, float y, float th_new){
 
 	// Vector 3f pose : The robots posture in world coordinates
 	pose << x, y, theta;
+
+	if(!readyToCompute) return ur;
 	
 	// Vector2f Pr : The robots reference point in world coordinates.
 	float cs = cos(theta);
@@ -608,7 +610,7 @@ Vector2f RobotPathFollowMPC::compute(float x, float y, float th_new){
 	// Clock Divider convinience method. MPC works better with slover clockrate which means longer prediction
 	if(clkDiv > 1){
 		if(clkTick == clkDiv) clkTick=0;
-		if(clkTick++ != 0 || !readyToCompute) return ur;
+		if(clkTick++ != 0) return ur;
 	}
 
 	float s = yk(0);
