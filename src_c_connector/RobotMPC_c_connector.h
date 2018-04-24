@@ -31,7 +31,8 @@ void RPFMPC_insertWaypoint(float i, float x, float y);
 void RPFMPC_insertWaypointRel(float i, float x, float y);
 void RPFMPC_makeLineDefs();
 
-// 
+void RPFMPC_setRk(float d_ref, float phi_ref);	//!< Set the reference Rk to a constant value over the whole horizon.
+void RPFMPC_setRkToCurrentLine();
 
 // Compute the control
 void RPFMPC_compute(float x, float y, float theta);
