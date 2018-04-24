@@ -85,6 +85,9 @@ void RPFMPC_clear(){
 void RPFMPC_clearWaypoints(){
 	rpfmpc->clearWaypoints();
 }
+void RPFMPC_clearWaypointsKeepCurrent(){
+	rpfmpc->clearWaypointsKeepCurrent();
+}
 
 void RPFMPC_addWaypoint(float x, float y){
 	rpfmpc->addWaypoint(x,y);
@@ -101,6 +104,15 @@ void RPFMPC_insertWaypointRel(float i, float x, float y){
 void RPFMPC_makeLineDefs(){
 	rpfmpc->makeLineDefs();
 }
+
+void RPFMPC_setRk(float d_ref, float phi_ref){
+	rpfmpc->setRk(d_ref,phi_ref);
+
+}	
+void RPFMPC_setRkToCurrentLine(){
+	rpfmpc->setRkToCurrentLine();
+}
+
 
 void RPFMPC_compute(float x, float y, float theta){
 	rpfmpc->compute(x,y,theta);

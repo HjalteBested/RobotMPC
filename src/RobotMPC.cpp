@@ -294,6 +294,15 @@ void RobotPathFollowMPC::clearWaypoints(){
 	allDone = false;
 }
 
+void RobotPathFollowMPC::clearWaypointsKeepCurrent(){
+	readyToCompute = false;
+	lineDefs = lineDefs.row(currentLine);
+	numLines = 0;
+	currentLine = 0;
+	allDone = false;
+}
+
+
 void RobotPathFollowMPC::addWaypoint(float x, float y){
 	int row = lineDefs.rows();
 	lineDefs.conservativeResize(row+1,Eigen::NoChange);
@@ -362,11 +371,13 @@ void RobotPathFollowMPC::makeLineDefs(){
 		lineDefs(M-1,4) = lineDefs(M-2,4); 
 		lineDefs(M-1,5) = lineDefs(M-2,5); 
 		lineDefs(M-1,6) = 0;
-
 		numLines = lineDefs.rows();
-		setRk(0,getPhiFixed(0));
 		readyToCompute = true;
 	}
+}
+
+void RobotPathFollowMPC::setRkToCurrentLine(){
+	setRk(0,getPhi(0));
 }
 
 void RobotPathFollowMPC::setRk(float d_ref, float phi_ref){
@@ -547,7 +558,7 @@ int RobotPathFollowMPC::predict(Vector6f const& yk, VectorXf const& Uk){
 			if(++kStepsFound == 1) kStep = n;
         	Sk(n+1) = -getLineLength(kStepsFound);
         	psi = getPsi(kStepsFound); 
-        	float phiVal = getPhiFixed(kStepsFound); 
+        	float phiVal = getPhi(kStepsFound); 
     		for(int nn=n; nn<N; nn++) mpc.Rk(2*nn+1) = phiVal;
     		//}
     	}

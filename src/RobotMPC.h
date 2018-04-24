@@ -190,6 +190,7 @@ class RobotPathFollowMPC
   		int kStep;		//!< The number of steps into the future where the intersection is predicted to happen. If this if zero the system starts tracking the next line.
 
   		void setRk(float d_ref, float phi_ref);	//!< Set the reference Rk to a constant value over the whole horizon.
+		void setRkToCurrentLine();
 
 		// Design Function For MPC
 		void design(float Qth, float Qdu, float Qu); //!< Design MPC Controller - Compute the Gain Matrices \f$H,H^{-1},L_{x0},L_R,L_{u-1}\f$
@@ -222,6 +223,7 @@ class RobotPathFollowMPC
   		int currentLine; 	//!< The index of the line currently being tracked
   		int numLines;		//!< The number of lines connecting the waypoints.. always the number of waypoints minus one.
   		void clearWaypoints(); //!< Clear Previously defined waypoint data
+  		void clearWaypointsKeepCurrent();
   		void setWaypoints(MatrixX2f waypoints); //!< Set all waypoints
   		void addWaypoint(float x, float y);		//!< Add a single waypoint
   		void insertWaypoint(float i, float x, float y); //!< Insert waypoint between waypoints at position i
