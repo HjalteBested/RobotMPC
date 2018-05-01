@@ -864,10 +864,8 @@ void LMPC::initMPC(int arg_N){
 
 	// Generate Lambda
 	for(int i=0; i<Nu; i++){
-		Lambda(i,i)   = 1;
-		if(i+nu<Nu){  
-		  Lambda(i+nu,i) = -1;
-		}
+		Lambda(i,i) = 1;
+		if(i+nu<Nu) Lambda(i+nu,i) = -1;
 	}
 
 	// Generate I0
