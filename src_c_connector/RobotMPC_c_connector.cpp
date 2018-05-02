@@ -224,7 +224,12 @@ void RPFMPC_printControllerGains(){
 void RPFMPC_printWaypoints(){
 	rpfmpc->printWaypoints();
 }
-
+void RPFMPC_printConstraints(){
+	rpfmpc->printConstraints();
+}
+void RPFMPC_printParams(){
+	rpfmpc->printParams();
+}
 
 void RPFMPC_setCurrentLine(int currentLine){ 
 	rpfmpc->currentLine = currentLine; 

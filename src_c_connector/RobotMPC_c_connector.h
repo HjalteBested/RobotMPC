@@ -47,6 +47,9 @@ void RPFMPC_printSys();
 void RPFMPC_printCondenseStateSpace();
 void RPFMPC_printControllerGains();
 void RPFMPC_printWaypoints();
+void RPFMPC_printConstraints();	//!< Print the constraints
+void RPFMPC_printParams();		//!< Print the constraints
+
 
 // Getter / Setter Functions
 void RPFMPC_setClkDiv(float clkDiv);
