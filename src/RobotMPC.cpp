@@ -35,7 +35,7 @@ RobotPathFollowMPC::RobotPathFollowMPC(){
 	a_des = 0.2;
 
     T = 0.04;
-	sysType = 1;
+	sysType = 2;
 	clkDiv = 1;
 	useNLScaling = 1;
 
@@ -110,11 +110,11 @@ void RobotPathFollowMPC::initRobot(float arg_w, float arg_a){
 }
 
 /// Initialize LTI System
-void RobotPathFollowMPC::initSys(int type, float T, float a, float v0, float omega0, float th_err0){
+void RobotPathFollowMPC::initSys(int type, float T, float a, float v0, float omega0=0, float th_err0=0){
 	float cs = cos(th_err0);
 	float sn = sin(th_err0);
 	switch(type){
-		case 1:{
+		case 1:{	
 			Matrix2f A;
 			Vector2f Bu;
 			Vector2f BuBar;
@@ -122,15 +122,52 @@ void RobotPathFollowMPC::initSys(int type, float T, float a, float v0, float ome
 			Matrix2f C;
 			A  <<  	1, T*(v0*cs-a*omega0*sn),
 			 		0, 1;
-			Bu  << 	(T*(2*a+T*v0)*cs-T*a*omega0*sn)/2, 
+			Bu << 	(T*(2*a+T*v0)*cs-T*a*omega0*sn)/2, 
 		 			T;
 			Br <<  	0, -T*(v0*cs-a*omega0*sn), 
 					0, 0;
 			C  <<   1, 0, 0, 1;
 			BuBar = Bu*v0;
+			B = Bu;
 			sys.initBuBrC(A,BuBar,Br,C);
+			xf.resize(2);
+			xp.resize(2);
 		}
 		break;
+		case 2:{	// LTI system OK - But not working with controller, yet!
+			Matrix3f A;
+			Vector3f Bu;
+			Vector3f BuBar;
+			MatrixXf Br(3,2);
+			MatrixXf C(2,3);
+			float tau = 0.2;
+			float e = exp(-T/tau);
+			float tauex = tau*(e-1);
+			float tau2 = tau*tau;
+			float T2 = T*T;
+		    A  <<  	1, 	T*(v0*cs-a*omega0*sn), tau*(a*cs*(1-e) + cs*v0*(T+tauex) - a*omega0*sn*(T+tauex)),
+		    		0,	1, -tauex,
+		    		0,	0,	e;
+		    Bu <<  	cs*tau2*v0 + a*cs*(T-tau) + (T2*cs*v0)/2 - T*cs*tau*v0 - (T2*a*omega0*sn)/2 - cs*e*tau2*v0  + a*cs*e*tau + a*omega0*sn*(tau*T + (e-1)*tau2),
+		    		T+tauex,
+		    		1-e;
+		    Br <<	0, -T*(v0*cs-a*omega0*sn),
+		    		0, 0,
+		    		0, 0;
+		    C  <<	1, 0, 0,
+		    		0, 1, 0;
+			BuBar = Bu*v0;
+			B = Bu;
+			sys.initBuBrC(A,BuBar,Br,C);
+			xf.resize(3);
+			xp.resize(3);
+			Kfx.resize(3,2);
+		    Kfx << 0.9902, 0.0000,
+		    	   0.0000, 0.9902,
+		    	   0.0047, 0.0442;
+		}
+		break;
+
 		/*
 		case 2:{ // LTI system OK - But not working with controller, yet!
 			float tau_v = 0.5;
@@ -628,18 +665,27 @@ Vector2f RobotPathFollowMPC::compute(float x, float y, float th_new){
 	float d = yk(1);
 	float theta_err = yk(2);
 
-	// Nonlinear scaling for d
-	float dScaled = d;
-	if(useNLScaling && theta_err > 1e-6){
-		dScaled = dScaled*sin(2*theta_err)/(2*theta_err);
-	}
-
 	// Controller State 
 	Vector2f zk;
-	zk << dScaled, theta;
-	
+	zk << d, theta;
+
+	if(sysType == 2){
+		if(firstRun){
+			xf << zk(0), zk(1), 0;
+		} else {
+			Vector2f err = zk - sys.C*xp;
+	    	xf = xp + Kfx*err;
+    	}
+    	// cout << "omega:\n" << xf(2) << endl;
+	} else {
+		xf = zk;
+	}
+
+	// Nonlinear scaling for d
+	if(useNLScaling && theta_err > 1e-3) xf(0) *= sin(2*theta_err)/(2*theta_err);
+
 	// MPC Optimized Control Gain for the Horizon
-	mpc.compute(zk);
+	mpc.compute(xf);
 	Vk = scaleVelocityVec(mpc.Uk, v_des);
 	// Uk = Lx0*zk + LR*Rk + Lum1*Uk(0);
 	
@@ -674,6 +720,8 @@ Vector2f RobotPathFollowMPC::compute(float x, float y, float th_new){
 
 	uw = invFw*ur;
 
+	if(sysType == 2) xp = sys.A*xf + B*ur(1);
+
 	firstRun = false;
 	return ur;
 }
@@ -696,7 +744,7 @@ Vector3f RobotPathFollowMPC::getPose(){
 
 // Print Functions for debugging
 void RobotPathFollowMPC::printRobot(){
-  cout << "Wheel-to-wheel distance: w = " << w << endl;
+  cout << "RobotParameters:\nWheel-to-wheel distance: w = " << w << endl;
   cout << "Reference point offset from wheel-axle along xr: a = " << a << endl;
   cout << "Matrix Fw:\n"  << Fw  << endl;
   cout << "Matrix Fw^-1:\n"  << invFw  << endl;
@@ -705,6 +753,16 @@ void RobotPathFollowMPC::printRobot(){
 void RobotPathFollowMPC::printWaypoints(){
   cout << "lineDefs:\n"  << lineDefs  << endl;
 }
+
+void RobotPathFollowMPC::printConstraints(){
+  cout << "Constraints:\nvw_max="  << q(0) << ", vw_min="  << -q(2) << ", omega_max="  << q(4) << ", omega_min="  << -q(5) << ", v_max="  << q(6) << ", v_min="  << -q(7) << ", a_max="  << acc_max << ", a_min="  << acc_min << endl;
+}
+
+void RobotPathFollowMPC::printParams(){
+	cout << "Params:\nQth=" << qth << ", Qdu=" << qdu << ", Qu=" << qu << ", a=" << a <<  ", ks=" << ks << ", ka=" << ka << ", clkDiv=" << clkDiv << ", N=" << mpc.N << endl;
+	cout << "v_des=" << v_des << ", a_des=" << a_des << endl;
+}
+
 
 // --------------------------------------------------------------------------------
 // ---------------------------- Helper Functions ---------------------------------- 
@@ -921,9 +979,9 @@ void LMPC::designMPC(const VectorXf& argQz, const VectorXf& argQdu, const Vector
   	Qucal  = Qu.replicate(N,1).asDiagonal();
 	
 	// Compute the Hessian Matrix and it's inverse
-	H =  Gu.transpose()*Qzcal*Gu +             // Hz
-         Lambda.transpose()*Qducal*Lambda +  // Hdu
-         Qucal;                              // Hu
+	H =  Gu.transpose()*Qzcal*Gu +             	// Hz
+         Lambda.transpose()*Qducal*Lambda +  	// Hdu
+         Qucal;                              	// Hu
 	invH = H.inverse();
 
 	// Linear Terms - If the optimization should be handled by 
@@ -932,7 +990,7 @@ void LMPC::designMPC(const VectorXf& argQz, const VectorXf& argQdu, const Vector
 	if(sys->nr()>0)
 		MR    =  Gu.transpose()*Qzcal*(Gr-MatrixXf::Identity(Nr,Nr));
 	else 
-		MR    =  Gu.transpose()*Qzcal*(-MatrixXf::Identity(Nz,Nz));
+		MR    =  Gu.transpose()*Qzcal*(  -MatrixXf::Identity(Nz,Nz));
 
 	Mum1  = -Lambda.transpose()*Qducal*I0;
 

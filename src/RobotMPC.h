@@ -151,6 +151,8 @@ class RobotPathFollowMPC
 		// Functions for printing various state information
 		void printRobot();  	//!< Print the Robot Parameters
 		void printWaypoints(); 	//!< Print waypoints and assiciated data in format \f$(P_{i,x},P_{i,x},|P_{ij}|,p_{ij,x},p_{ij,y},\varphi_{ij},\psi)\f$ 
+		void printConstraints();//!< Print the constraints
+		void printParams();//!< Print the constraints
 
 		int clkDiv;
 		int clkTick;
@@ -173,6 +175,7 @@ class RobotPathFollowMPC
 	    Vector6f yk;	//!< \f$y_k = (s_k,d_k,\tilde{\theta}_k,\varphi_{ij},\varphi_{jk},\psi_j)\f$
 	    Vector2f Pr;	//!< Robot reference point in world coordinates.
 	    float uk;		//!< Control input for current timestep \f$u_k\f$
+
 
 		Vector2f ur;	//!< Vector with heading and angular velocity: \f$u_r = (v,\omega)^T \f$
 		Vector2f uw;	//!< Vector with the left and right wheel velocities: \f$u_w = (v_l,v_r)^T\f$
@@ -276,6 +279,11 @@ class RobotPathFollowMPC
 
 		bool firstRun;
 
+		// Kalman
+	    VectorXf xf;	
+	    VectorXf xp;
+	    MatrixXf Kfx;
+	    MatrixXf B;
 };
 
 

@@ -35,22 +35,24 @@ int main(){
   float acc_max =  0.5;
   float acc_min = -0.1;
   pf.setConstraints(vw_min,vw_max,omega_min,omega_max,v_min,v_max,acc_min,acc_max);
-  
 
   // Design MPC - Compute controller gains for the horizon
   int N = 100;
-  float Qth = 0.02;
-  float Qdu = 0.0005;
-  float Qu =  0.0008;
+  float Qth = 0.1;
+  float Qdu = 0.01;
+  float Qu =  0.001;
   pf.initMPC(N);
   pf.design(Qth, Qdu, Qu);
-  pf.ks = v_des/omega_max;
+  pf.ks = 0*v_des/omega_max;
   pf.ka = 0;
   // Print That Shit !
   pf.printRobot();
   pf.sys.printSys();
-  // pf.mpc.printCondenseStateSpace();
-  // pf.mpc.printControllerGains();
+  pf.printConstraints();
+  pf.printParams();
+
+  pf.mpc.printCondenseStateSpace();
+  pf.mpc.printControllerGains();
   // cout << "Matrix P:\n" << pf.P << endl;
   // cout << "Vector q:\n" << pf.q << endl;
   int track = 1;
@@ -85,8 +87,9 @@ int main(){
   // n-by-n square
 
   // pf.insertWaypoint(2, 3.5,0.5);
-  cout << "Defines Line Definitions:\n" << pf.lineDefs << endl;
+  cout << "Line Definitions:\n" << pf.lineDefs << endl;
   
+  cout << "Static Kalman Gain:\n" << pf.Kfx << endl;
 
   Vector2f ur = pf.compute(-0.3,-0.6,-0.2);
   cout << "ur:\n" << ur << endl;
