@@ -16,8 +16,8 @@ int main(){
   
   // Init MPC
   float T = 0.01 * pf.clkDiv;
-  float v_des = 0.3;
-  pf.a_des = 0.1;
+  float v_des = 0.5;
+  pf.a_des = 0.3;
   float w = 0.26;
   float a = 0.10;
   
@@ -28,7 +28,7 @@ int main(){
   // Initialize Constraints
   float vw_max =  0.6;
   float vw_min = -vw_max;
-  float omega_max = 2*PI/12;
+  float omega_max = 2*PI/8;
   float omega_min = -omega_max;
   float v_max =  1;
   float v_min = -v_max;
@@ -38,8 +38,8 @@ int main(){
 
   // Design MPC - Compute controller gains for the horizon
   int N = 100;
-  float Qth = 0.1;
-  float Qdu = 0.01;
+  float Qth = 0.05;
+  float Qdu = 0.001;
   float Qu =  0.001;
   pf.initMPC(N);
   pf.design(Qth, Qdu, Qu);
@@ -59,7 +59,7 @@ int main(){
 
   switch(track){
     case 1:{
-      int n=2;
+      int n=3;
       pf.addWaypoint(0,    0);
       pf.addWaypoint(n,    0);
       pf.addWaypoint(n,   -n);
