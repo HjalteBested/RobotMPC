@@ -16,7 +16,7 @@ int main(){
   
   // Init MPC
   float T = 0.01 * pf.clkDiv;
-  float v_des = 0.5;
+  float v_des = 1.0;
   pf.a_des = 0.3;
   float w = 0.26;
   float a = 0.10;
@@ -26,7 +26,7 @@ int main(){
   pf.currentLine=0;
 
   // Initialize Constraints
-  float vw_max =  0.6;
+  float vw_max =  0.9;
   float vw_min = -vw_max;
   float omega_max = 2*PI/8;
   float omega_min = -omega_max;
@@ -38,9 +38,9 @@ int main(){
 
   // Design MPC - Compute controller gains for the horizon
   int N = 100;
-  float Qth = 0.05;
+  float Qth = 0.02;
   float Qdu = 0.001;
-  float Qu =  0.001;
+  float Qu =  0.05;
   pf.initMPC(N);
   pf.design(Qth, Qdu, Qu);
   pf.ks = 0*v_des/omega_max;
@@ -51,11 +51,11 @@ int main(){
   pf.printConstraints();
   pf.printParams();
 
-  pf.mpc.printCondenseStateSpace();
-  pf.mpc.printControllerGains();
+  //pf.mpc.printCondenseStateSpace();
+  //pf.mpc.printControllerGains();
   // cout << "Matrix P:\n" << pf.P << endl;
   // cout << "Vector q:\n" << pf.q << endl;
-  int track = 1;
+  int track = 4;
 
   switch(track){
     case 1:{
@@ -68,9 +68,9 @@ int main(){
     }
     break;
     case 2:{
-      pf.addWaypoint(0,  0 );
+      pf.addWaypoint(0,    0);
       pf.addWaypoint(1.5,  0);
-      pf.addWaypoint(1.5,  -0.5);
+      pf.addWaypoint(1.5, -0.5);
       pf.addWaypoint(3,   -0.5);
     }
     break;
@@ -81,6 +81,16 @@ int main(){
       pf.addWaypoint(3,   -0.2);
     }
     break;
+    case 4:{
+      float Nstep = 20;
+      for(int i=0; i<=Nstep; i++){
+        float amp = 0.5;
+        float x = i/Nstep;
+        float y = amp*sin(2 * M_PI * x);
+        pf.addWaypoint(3*x,y);
+      }
+    }
+    break;
   }
   pf.makeLineDefs();
   // Define waypoints 
@@ -89,15 +99,15 @@ int main(){
   // pf.insertWaypoint(2, 3.5,0.5);
   cout << "Line Definitions:\n" << pf.lineDefs << endl;
   
-  cout << "Static Kalman Gain:\n" << pf.Kfx << endl;
+  // cout << "Static Kalman Gain:\n" << pf.Kfx << endl;
 
-  Vector2f ur = pf.compute(-0.3,-0.6,-0.2);
-  cout << "ur:\n" << ur << endl;
+  //Vector2f ur = pf.compute(-0.3,-0.6,-0.2);
+  //cout << "ur:\n" << ur << endl;
 
 
   bool runSim = true;
   if(runSim){    
-    pf.runSimulation(0.2,0.2,-0.1,10000);
+    pf.runSimulation(0,0,0,10000);
     // cout << "Here is the simdata:\n\ttime\t      x\t\t  y\t   theta\t  v\t\t  omega\t     vl\t\t vr\t      s\t\t  d\t th_err\n" << mpc.simData << endl;
     cout << "Simulation Complete!" << endl;
 
