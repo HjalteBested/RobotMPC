@@ -16,17 +16,17 @@ int main(){
   
   // Init MPC
   float T = 0.01 * pf.clkDiv;
-  float v_des = 1.0;
+  float v_des = 0.3;
   pf.a_des = 0.3;
   float w = 0.26;
-  float a = 0.10;
+  float a = 0.1;
   
   pf.initRobot(w,a);
   pf.init(T, v_des);
   pf.currentLine=0;
 
   // Initialize Constraints
-  float vw_max =  0.9;
+  float vw_max =  0.6;
   float vw_min = -vw_max;
   float omega_max = 2*PI/8;
   float omega_min = -omega_max;
@@ -38,13 +38,16 @@ int main(){
 
   // Design MPC - Compute controller gains for the horizon
   int N = 100;
-  float Qth = 0.02;
+  float Qth = 0.05;
   float Qdu = 0.001;
-  float Qu =  0.05;
+  float Qu =  0.001;
   pf.initMPC(N);
   pf.design(Qth, Qdu, Qu);
   pf.ks = 0*v_des/omega_max;
   pf.ka = 0;
+
+  pf.useNLScaling = 1;
+
   // Print That Shit !
   pf.printRobot();
   pf.sys.printSys();
@@ -55,11 +58,16 @@ int main(){
   //pf.mpc.printControllerGains();
   // cout << "Matrix P:\n" << pf.P << endl;
   // cout << "Vector q:\n" << pf.q << endl;
-  int track = 4;
+  int track = 1;
 
   switch(track){
+    case 0:{
+      pf.addWaypoint(0,    0);
+      pf.addWaypoint(4,    0);
+    }
+    break;    
     case 1:{
-      int n=3;
+      int n=2;
       pf.addWaypoint(0,    0);
       pf.addWaypoint(n,    0);
       pf.addWaypoint(n,   -n);
@@ -91,6 +99,22 @@ int main(){
       }
     }
     break;
+    case 5:{
+      float len = 2.0;
+      float angleDeg = 150;
+      float angleRad = angleDeg*M_PI/180.0f;
+      pf.addWaypoint(0,    0);
+      pf.addWaypoint(len,    0);
+      float x = len+len*cos(angleRad);
+      float y = len*sin(angleRad);
+      pf.addWaypoint(x,y);
+    }
+    break;
+    case 6:{
+      pf.addWaypoint(0,    0);
+      pf.addWaypoint(2,    0);
+      pf.addWaypoint(2,    2);
+    }
   }
   pf.makeLineDefs();
   // Define waypoints 
@@ -107,7 +131,7 @@ int main(){
 
   bool runSim = true;
   if(runSim){    
-    pf.runSimulation(0,0,0,10000);
+    pf.runSimulation(1,0.5,0,10000);
     // cout << "Here is the simdata:\n\ttime\t      x\t\t  y\t   theta\t  v\t\t  omega\t     vl\t\t vr\t      s\t\t  d\t th_err\n" << mpc.simData << endl;
     cout << "Simulation Complete!" << endl;
 

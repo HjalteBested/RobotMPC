@@ -22,7 +22,7 @@ RobotPathFollowMPC::RobotPathFollowMPC(){
 	// Default Constraints
 	float vw_max =  1;
 	float vw_min = -vw_max;
-	float omega_max = 2*PI/10;
+	float omega_max = 2*PI/8;
 	float omega_min = -omega_max;
 	float v_max =  1;
 	float v_min = -1;
@@ -32,7 +32,7 @@ RobotPathFollowMPC::RobotPathFollowMPC(){
 
 	// More control parameters
 	v_des = 0.3;
-	a_des = 0.2;
+	a_des = 0.3;
 
     T = 0.04;
 	sysType = 2;
@@ -92,6 +92,7 @@ void RobotPathFollowMPC::clear(){
 	timeSinceRefChange = 0;
 }
 
+// TODO : Robot Class such that several robot configurations can be supported.
 /// Initialize Robot
 void RobotPathFollowMPC::initRobot(float arg_w, float arg_a){
 	w = arg_w;	// wheel-wheel distance
@@ -159,6 +160,7 @@ void RobotPathFollowMPC::initSys(int type, float T, float a, float v0, float ome
 			BuBar = Bu*v0;
 			B = Bu;
 			sys.initBuBrC(A,BuBar,Br,C);
+			// Kalman Stuff - Should be cleaned up! Implent Kalman Filter Class
 			xf.resize(3);
 			xp.resize(3);
 			Kfx.resize(3,2);
@@ -167,41 +169,6 @@ void RobotPathFollowMPC::initSys(int type, float T, float a, float v0, float ome
 		    	   0.0047, 0.0442;
 		}
 		break;
-
-		/*
-		case 2:{ // LTI system OK - But not working with controller, yet!
-			float tau_v = 0.5;
-			float tau_omega = 0.5;
-			float e_v     = exp(-T/tau_v);
-			float e_omega = exp(-T/tau_omega);
-			nx = 4; // Number of states
-			nu = 2; // Number of controlled inputs
-		    nr = 2; // Number of uncontrolled referenc inputs
-		    nz = 2;	// Number of system outputs
-		  	A.resize(nx,nx);
-		    B.resize(nx,nu);
-		    Bbar.resize(nx,nu);
-		    Br.resize(nx,nr);
-		    C.resize(nz,nx);   
-		    A  <<  	1, T*(v0*cs-a*omega0*sn), sn*tau_v*(1-e_v), -((e_omega-1)*(a*sn*omega0-cs*v0)*tau_omega+((e_omega-1)*a-T*v0)*cs+T*a*sn*omega0)*tau_omega,
-			 		0, 1, 0, -tau_omega*(e_omega-1),
-			 		0, 0, e_v, 0,
-			 		0, 0, 0, e_omega;
-			B  << 	(e_omega-1)*(a*sn*omega0-cs*v0)*tau_omega*tau_omega+0.5*(((2*e_omega-2)*a-2*T*v0)*cs+2*T*a*sn*omega0)*tau_omega-0.5*T*((-T*v0-2*a)*cs+T*a*sn*omega0), sn*((e_v-1)*tau_v+T),
-					tau_omega*(e_omega-1)+T, 0,
-					0, 1-e_v,
-					1-e_omega, 0;
-			Br <<  	0, T*(a*omega0*sn-cs*v0), 
-					0, 0,
-					0, 0,
-					0, 0;
-			C  <<   1, 0, 0, 0, 
-					0, 1, 0, 0;
-			Bbar = B;
-			Bbar.col(0) *= v0;
-		}
-		break;
-		*/
 	}
 }
 
@@ -210,21 +177,22 @@ void RobotPathFollowMPC::initSys(int type, float T, float a, float v0, float ome
 void RobotPathFollowMPC::setV(float v){
 	if(v != v_des){
 		v_des = v;
+		readyToCompute = false;
 		initSys(sysType, T, a, v_des, 0, 0);
 		design(qth,qdu,qu);
+		readyToCompute = true;
 	}
 }
 
 void RobotPathFollowMPC::initMPC(int N){
 		mpc.initMPC(N);
-		// Stacked Vectors for the prediction horizon
+		// Stacked Vectors for the prediction horizon, preallocated for speed!
 		Vk 		= VectorXf::Zero(mpc.N);
 		Omegak 	= VectorXf::Zero(mpc.N);
 		Dk 		= VectorXf::Zero(mpc.N+1);
 		Sk 		= VectorXf::Zero(mpc.N+1);
 		Thetak 	= VectorXf::Zero(mpc.N+1);
 }
-
 
 
 /// Design MPC
@@ -238,8 +206,6 @@ void RobotPathFollowMPC::design(float argQth, float argQdu, float argQu){
 	mpc.condenseStateSpace();
 	mpc.designMPC(Qz,Qdu,Qu);
 }
-
-
 
 // Functions for accessing the needed reference info
 Vector2f RobotPathFollowMPC::getPi(int i){
@@ -533,10 +499,10 @@ VectorXf RobotPathFollowMPC::scaleVelocityVec(VectorXf const& Uk, float v_des){
 		if(dV < dVmin) Vk(n-1) = Vk(n)-dVmin;
 	}
 
-	// Here is a tradeoff between satisfying the velocity constraints vs. the acceleration constraints
-	// ka is a mix filter
+	/* Here is a tradeoff between satisfying the velocity constraints vs. the deceleration constraint.
+	 * Satisfying both is only possible if the prediction horizon is sufficiently long! 
+	 * ka is a mix filter */
 	if(Vk(0) < vkm1 + dVmin) Vk(0) = ka*(vkm1 + dVmin) + (1-ka)*Vk(0);
-	// if(Vk(0) > vkm1 + dVmax) Vk(0) = vkm1 + dVmax; // Should not change anything...
 	return Vk;
 }
 
@@ -569,6 +535,7 @@ int RobotPathFollowMPC::predict(Vector6f const& yk, VectorXf const& Uk){
 		float cs = cos(theta_err+T*Omegak(n)/2);
 		float sn = sin(theta_err+T*Omegak(n)/2);
 		float TV = T*Vk(n);
+		//float TV = T*v_des;
 		float TOmega = T*Omegak(n);
 
     	Sk(n+1) = Sk(n) + TV*cs - a*TOmega*sn;
@@ -631,15 +598,14 @@ Vector2f RobotPathFollowMPC::compute(float x, float y, float th_new){
 	// Currently the internal pose requires that theta is not wrapped to [-π,π[, thus
 	// it is unwrapped here:
 	float th_diff = th_new-th_old;
-
 	if(th_diff > PI){
 		--th_nwrap;
 	} else if(th_diff < -PI){
 		++th_nwrap;
 	}
-	
 	th_old = th_new;
-	float theta = th_new+th_nwrap*TWO_PI;
+
+	float theta = th_new + th_nwrap*TWO_PI; // The unwrapped theta!
 
 	// Vector 3f pose : The robots posture in world coordinates
 	pose << x, y, theta;
@@ -680,9 +646,9 @@ Vector2f RobotPathFollowMPC::compute(float x, float y, float th_new){
 	} else {
 		xf = zk;
 	}
-
+	float absTwoThErr = abs(2*theta_err);
 	// Nonlinear scaling for d
-	if(useNLScaling && theta_err > 1e-3) xf(0) *= sin(2*theta_err)/(2*theta_err);
+	if(useNLScaling && absTwoThErr > 1e-3) xf(0) *= sin(absTwoThErr)/absTwoThErr;
 
 	// MPC Optimized Control Gain for the Horizon
 	mpc.compute(xf);
@@ -720,7 +686,7 @@ Vector2f RobotPathFollowMPC::compute(float x, float y, float th_new){
 
 	uw = invFw*ur;
 
-	if(sysType == 2) xp = sys.A*xf + B*ur(1);
+	if(sysType == 2) xp = sys.A*xf + B*ur(1) + sys.Br*mpc.Rk.topRows(2); // + Br * mpc.Rk(1) ??
 
 	firstRun = false;
 	return ur;
@@ -827,6 +793,10 @@ Vector3f RobotPathFollowMPC::kinupdate(Vector3f pose, Vector2f uw, float T){
 	return  newpose;
 }
 
+void RobotPathFollowMPC::logData(uint iter, float time){
+		simData.row(iter) << time,pose(0),pose(1),wrapToPi(pose(2)),ur(0),ur(1),uw(0),uw(1),yk(0),yk(1),yk(2),currentLine,kStep;
+}
+
 void RobotPathFollowMPC::runSimulation(float x, float y, float theta, int nstp){
 	pose << x,y,theta;
 	int iter=0;
@@ -859,7 +829,7 @@ void RobotPathFollowMPC::runSimulation(float x, float y, float theta, int nstp){
 
 // ********************************************************************************************** //
 //                              -----------------------------------                               //
-//                              ------ Linear MPC Contrommer ------                               //
+//                              ------ Linear MPC Controller ------                               //
 //                              -----------------------------------                               //
 // ********************************************************************************************** //
 
@@ -885,7 +855,7 @@ LMPC::~LMPC(){
 	// cout << "LMPC Object Was Destroyed!!" << endl;
 }
 
-void LMPC::setSys(LTIsys*argSys){
+void LMPC::setSys(LTIsys *argSys){
 	sys = argSys;
 }
 
@@ -920,19 +890,20 @@ void LMPC::initMPC(int arg_N){
   	Lambda  = MatrixXf::Zero(Nu,Nu);
 	I0      = MatrixXf::Zero(Nu,nu);
 
-	// Generate Lambda
+	// Fill Lambda
 	for(int i=0; i<Nu; i++){
 		Lambda(i,i) = 1;
 		if(i+nu<Nu) Lambda(i+nu,i) = -1;
 	}
 
-	// Generate I0
+	// Fill I0
 	for(int i=0; i<nu; i++){
 		I0(i,i) = 1;
 	}
 
 	// Stacked Vectors
 	Rk 		= VectorXf::Zero(Nr);
+	// Dk 		= VectorXf::Zero(Nd); -- missing !!
 	Uk 		= VectorXf::Zero(Nu);
 
 	// Set Flags
@@ -949,12 +920,12 @@ void LMPC::condenseStateSpace(){
 
 	// Compute the first block column
 	for(int i=0;i<N;i++){
-	int k1 = i*nz;
-	Gu.block(k1,0,nz,nu) = T*sys->Bu;
-	if(sys->nr()>0) Gr.block(k1,0,nz,nr) = T*sys->Br;
-	if(sys->nd()>0) Gd.block(k1,0,nz,nd) = T*sys->Bd;
-	T = T*sys->A;
-	F.block(k1,0,nz,nx) << T;
+		int k1 = i*nz;
+		Gu.block(k1,0,nz,nu) = T*sys->Bu;
+		if(sys->nr()>0) Gr.block(k1,0,nz,nr) = T*sys->Br;
+		if(sys->nd()>0) Gd.block(k1,0,nz,nd) = T*sys->Bd;
+		T = T*sys->A;
+		F.block(k1,0,nz,nx) << T;
 	}
 
 	// Fill the rest of the matrix
@@ -1076,8 +1047,7 @@ void LTIsys::initBuBrBdC(MatrixXf argA, MatrixXf argBu, MatrixXf argBr, MatrixXf
 int LTIsys::nx(){
 	return A.rows();
 }
-
-/// Return the number of outputs
+/// Return the number of control inputs
 int LTIsys::nu(){
 	return Bu.cols();
 }

@@ -80,8 +80,8 @@ class LMPC
 		void setSys(LTIsys * sys);
 		LTIsys * sys;
 
-		void initMPC(int N);
-		int N;		//!< Control / Prediction Horizon (Samples)
+		void initMPC(int N); 
+		int N;	//!< Control / Prediction Horizon (Samples)
 		int Nx;	//!< N*nx
 		int Nz;	//!< N*nz
 		int Nu;	//!< N*nu
@@ -196,12 +196,12 @@ class RobotPathFollowMPC
 		void setRkToCurrentLine();
 
 		// Design Function For MPC
-		void design(float Qth, float Qdu, float Qu); //!< Design MPC Controller - Compute the Gain Matrices \f$H,H^{-1},L_{x0},L_R,L_{u-1}\f$
-		// float Qth; 	//!< Penalty for orientation error 
-  		// float Qdu; 	//!< Controller penalty on control changes
-  		// float Qu;  	//!< Controller penalty on control signal
-		
-		Vector2f compute(float x, float y, float theta);
+		void design(float qth, float qdu, float qu); //!< Design MPC Controller - Compute the Gain Matrices \f$H,H^{-1},L_{x0},L_R,L_{u-1}\f$
+		float qth; 	//!< Penalty for orientation error 
+  		float qdu; 	//!< Controller penalty on control changes
+  		float qu;  	//!< Controller penalty on control signal
+				
+		Vector2f compute(float x, float y, float theta); 
 		Vector2f computeW(float x, float y, float theta);
 		int predict(Vector6f const& yk, VectorXf const& Uk); //!< Predict robot posture over the horizon and update the reference at meaningful time instants
 
@@ -251,9 +251,7 @@ class RobotPathFollowMPC
   		Matrix3f Rot(float angle); 	 //!< Return 3D Rotation Matrix around z-axix
   		Matrix2f Rot2D(float angle); //!< Return 2D Rotation Matrix around z-axix
 
-  		float qth;
-  		float qdu;
-  		float qu;
+
 
   		int timeSinceRefChange;
 
@@ -264,20 +262,21 @@ class RobotPathFollowMPC
   		Vector3f kinupdate(Vector3f pose, Vector2f uw, float T);	//!< Kinematic open-loop simulation of unicycle using forward euler approximation - could be improved by proper integration
   		void runSimulation(float x, float y, float theta, int nstp); //!< Kinematic closed-loop simulation of MPC control of a unicycle started at a given pose and simulated for nstp iterations.
   		MatrixXf simData; //!< Simulation Data in Format: \f$(t,x,y,\theta,v,\omega,v_l,v_r,s,d,\tilde{\theta},L_i,k_{step})\f$ 
+		void logData(uint iter, float time); 
 
-  		float ka; 
+  		float ka; //!< Weight for the mix filter
   		float ks; //!< The reference will be forced to change to newline if $\f$ s_k > -k_s |\psi_j| \f$
 
-  		float th_old;
+  		float th_old; 
   		float th_nwrap;
   		float thUnwrap(float th_new);
 
-  		bool isLastLine(int i);
-  		float get_s();
-  		float get_d();
-		float get_th_err();
+  		bool isLastLine(int i); //!< Returns true if the currentLine is the last line
+  		float get_s(); //!< Return the current value of s
+  		float get_d(); //!< Return the current value of d
+		float get_th_err(); //!< Return the current orientation error theta_err
 
-		bool firstRun;
+		bool firstRun; //!< True until the compute function has been called once
 
 		// Kalman
 	    VectorXf xf;	
