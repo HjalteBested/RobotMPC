@@ -1,5 +1,5 @@
 # RobotMPC
-Receding horizon approach to path following mobile robot in the presence of velocity and acceleration constraints written in C++. In one project it was needed to be able to compile the library using a plain gcc compiler and therefore the code alse includes c_connector classes for that wraps the most important functionality in to plain C-functions.
+Model Predictive Path Following Controller for mobile robot in the presence of velocity and acceleration constraints written in C++. In one project it was needed to be able to compile the library using a plain gcc compiler and therefore the code alse includes c_connector classes for that wraps the most important functionality in to plain C-functions.
 
 The implementation concerns a so-called uni-cycle mobile robot with two differential-drive wheels on the same axle and one castor wheel.
 
